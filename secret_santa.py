@@ -6,132 +6,27 @@ import random
 import smtplib
 import sys
 
-# =============================================================================
-# Miscellaneous support functions
-
-def digits(N):
-    return(math.floor(math.log10(N))+1)
+import ss_parse
+import ss_test_input
+import ss_util
 
 # =============================================================================
 # Read input from a file
 
+# TODO: Just call parse directly
+
+def get_file_input(filename):
+    import ss_parse
+    return(ss_parse.parse(filename))
+
 # =============================================================================
 # Specify test input
 
+# TODO: Just call get_test_input directly
+
 def get_test_input(N,P):
-
-    # Verify that the arguments are valid
-    if int(N) != N or N <= 0:
-        raise ValueError(" ".join(["Argument N to",
-            sys._getframe().f_code.co_name, "must be a positive integer."]))
-    if N < 6:
-        raise ValueError(" ".join(["Argument N to",
-            sys._getframe().f_code.co_name,
-            "must be at least 6 for sane testing."]))
-    if int(P) != P or P <= 0:
-        raise ValueError(" ".join(["Argument P to",
-            sys._getframe().f_code.co_name, "must be a positive integer."]))
-    if P > (N-1)*(N+1)/4 - N:
-        # N(N-1) possible pairs
-        # this includes [A,B] and [B,A] -- only (1/2)(N-1)^2 unique pairs
-        # must still have N possible pairs
-        # upper bound is (N^2-4N+1)/2
-        # for the same of being safe, let's limit further by cutting this in
-        #   half again
-        print("N = {0}, P = {1}".format(N,P))
-        print("(N-1)(N+1)/4 - N = {0}".format((N-1)*(N+1)/4-N))
-        raise ValueError(" ".join(["Argument P to",
-            sys._getframe().f_code.co_name,
-            "cannot be greater than (N-1)(N+1)/4-N."]))
-
-    # Select some names at random
-    name_list = ["Alicia"   , "Alexander",
-                 "Bronwyn"  , "Bartholomew",
-                 "Catherine", "Charles",
-                 "Danielle" , "Duncan",
-                 "Elspeth"  , "Edwin",
-                 "Fern"     , "Fergus",
-                 "Georgina" , "Gus",
-                 "Helene"   , "Harry",
-                 "Isola"    , "Ivan",
-                 "Jennifer" , "Jackson",
-                 "Kelly"    , "Kevin",
-                 "Lois"     , "Liam",
-                 "Maude"    , "Malcolm",
-                 "Nolwenn"  , "Noel",
-                 "Ophelia"  , "Oscar",
-                 "Penelope" , "Peter",
-                 "Queenie"  , "Quincy",
-                 "Rosalyn"  , "Roland",
-                 "Samantha" , "Samuel",
-                 "Tanya"    , "Theodore",
-                 "Ulrike"   , "Ulysses",
-                 "Veronica" , "Victor",
-                 "Wendy"    , "William",
-                 "Xanthippe", "Xavier",
-                 "Yasmina"  , "Yannick",
-                 "Zelda"    , "Zachariah"]
-    if N <= len(name_list):
-        random.shuffle(name_list)
-        names = name_list[0:N]
-    else:
-        names = []
-        for i in range(1,N+1):
-            name = "{i:0{w}d}-{name}".format(
-                    i=i,w=digits(N),name=random.choice(name_list))
-            names.append(name)
-
-    # Build random email addresses for the users
-    emails = {name: "test-{0}@somedomain.com".format(name) for name in names}
-
-    # Build some disallowed pairs at random
-    bad_pairs = []
-    i = 0
-    while True:
-        n1 = random.choice(names)
-        n2 = random.choice(names)
-        if n1 < n2:
-            pair = (n1, n2)
-        elif n1 == n2:
-            continue
-        else:
-            pair = (n2, n1)
-        if pair not in bad_pairs:
-            bad_pairs.append(pair)
-            i = i + 1
-        if i == P:
-            break
-
-    # To help demonstrate later processing: swap order of some pairs
-    bad_pairs = [(pair[0],pair[1]) if random.randint(0,1) == 0 else
-            (pair[1],pair[0]) for pair in bad_pairs]
-
-    return(emails, bad_pairs)
-
-# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-def TEST_get_test_input():
-    N = 6
-    P = 2
-    print("Choose {0} names with {1} forbidden pairs:".format(N,P))
-    emails, bad_pairs = get_test_input(N,P)
-    print("  Names:")
-    for i, (name, email) in enumerate(emails.items()):
-        print("    {0:{1}}: {2} <{3}>".format(i+1,digits(N),name,email))
-    print("  Forbidden Pairs:")
-    for i, pair in enumerate(bad_pairs):
-        print("    {0:{1}}: {2[0]} & {2[1]}".format(i+1,digits(P),pair))
-    print("")
-    N = 60
-    P = 60
-    print("Choose {0} names with {1} forbidden pairs:".format(N,P))
-    emails, bad_pairs = get_test_input(N,P)
-    print("  Names:")
-    for i, (name, email) in enumerate(emails.items()):
-        print("    {0:{1}}: {2} <{3}>".format(i+1,digits(N),name,email))
-    print("  Forbidden Pairs:")
-    for i, pair in enumerate(bad_pairs):
-        print("    {0:{1}}: {2[0]} & {2[1]}".format(i+1,digits(P),pair))
+    import ss_test_input
+    return(ss_test_input.get_test_input(N,P))
 
 # =============================================================================
 # Verify input
@@ -221,10 +116,12 @@ def TEST_process_input():
     emails, bad_pairs = get_test_input(N,P)
     print("  Names:")
     for i, (name, email) in enumerate(emails.items()):
-        print("    {0:{1}}: {2} <{3}>".format(i+1,digits(N),name,email))
+        print("    {0:{1}}: {2} <{3}>".format(
+            i+1,ss_util.digits(N),name,email))
     print("  Forbidden Pairs:")
     for i, pair in enumerate(bad_pairs):
-        print("    {0:{1}}: {2[0]} & {2[1]}".format(i+1,digits(P),pair))
+        print("    {0:{1}}: {2[0]} & {2[1]}".format(
+            i+1,ss_util.digits(P),pair))
     forbidden = process_input(emails, bad_pairs)
     print("  Invalid Dict:")
     names = sorted(list(forbidden.keys()))
@@ -276,7 +173,7 @@ def selection_loop(emails, forbidden):
     iter_max = 1000
     for iteration in range(iter_max):
         print("Iteration {0:0{1}d} ------------------------------".format(
-            iteration, digits(iter_max)))
+            iteration, ss_util.digits(iter_max)))
         try:
             results = single_selection(emails, forbidden)
         except ValueError as error:
@@ -323,13 +220,17 @@ def main():
     N = 10
     P = 14
     print("Choose {0} names with {1} forbidden pairs:".format(N,P))
-    emails, bad_pairs = get_test_input(N,P)
+    input_data = ss_test_input.get_test_input(N,P)
+    emails = input_data["PARTICIPANTS"]
+    bad_pairs = input_data["DO NOT PAIR"]
     print("  Names:")
     for i, (name, email) in enumerate(emails.items()):
-        print("    {0:{1}}: {2} <{3}>".format(i+1,digits(N),name,email))
+        print("    {0:{1}}: {2} <{3}>".format(
+            i+1,ss_util.digits(N),name,email))
     print("  Forbidden Pairs:")
     for i, pair in enumerate(bad_pairs):
-        print("    {0:{1}}: {2[0]} & {2[1]}".format(i+1,digits(P),pair))
+        print("    {0:{1}}: {2[0]} & {2[1]}".format(
+            i+1,ss_util.digits(P),pair))
 
     print("Verify input:")
     verify_input(emails, bad_pairs)
