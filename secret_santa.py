@@ -200,6 +200,8 @@ def TEST_selection_loop():
 # Send test email to organizer
 
 def test_email_send(pairs):
+    # TODO: Add a note -- if login fails and server is GMail, tell people to
+    #       check the "less secure apps" setting.
     server = smtplib.SMTP('smtp.gmail.com:587')
     server.ehlo()
     server.starttls()
@@ -325,8 +327,7 @@ def main():
     for giver in pairs.keys():
         # Testing -- need to change to the right email
         send_email(server, organizer["name"], organizer["email"],
-                #giver, emails[giver], pairs[giver],
-                giver, emails[giver], "TEST",
+                giver, emails[giver], pairs[giver],
                 input_data["MESSAGE SUBJECT"], input_data["MESSAGE BODY"])
     email_logout(server)
 
