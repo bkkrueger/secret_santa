@@ -217,34 +217,43 @@ def test_email_send(pairs):
 # Main
 
 def main():
+
+    # Get input
+    # TODO: Command line argument: generate random test input or read from a
+    #       user-specified file.
     N = 10
     P = 14
     print("Choose {0} names with {1} forbidden pairs:".format(N,P))
     input_data = ss_test_input.get_test_input(N,P)
     emails = input_data["PARTICIPANTS"]
     bad_pairs = input_data["DO NOT PAIR"]
-    print("  Names:")
-    for i, (name, email) in enumerate(emails.items()):
-        print("    {0:{1}}: {2} <{3}>".format(
-            i+1,ss_util.digits(N),name,email))
-    print("  Forbidden Pairs:")
-    for i, pair in enumerate(bad_pairs):
-        print("    {0:{1}}: {2[0]} & {2[1]}".format(
-            i+1,ss_util.digits(P),pair))
 
+    if __debug__:
+        print("  Names:")
+        for i, (name, email) in enumerate(emails.items()):
+            print("    {0:{1}}: {2} <{3}>".format(
+                i+1,ss_util.digits(N),name,email))
+        print("  Forbidden Pairs:")
+        for i, pair in enumerate(bad_pairs):
+            print("    {0:{1}}: {2[0]} & {2[1]}".format(
+                i+1,ss_util.digits(P),pair))
+
+    # Process input
     print("Verify input:")
     verify_input(emails, bad_pairs)
     print("  Input valid")
 
     print("Process input:")
     forbidden = process_input(emails, bad_pairs)
-    print("  Invalid Dict:")
-    names = sorted(list(forbidden.keys()))
-    for name in names:
-        invalid = sorted(list(forbidden[name]))
-        print("    {0}:".format(name))
-        for name2 in invalid:
-            print("      {0}".format(name2))
+
+    if __debug__:
+        print("  Invalid Dict:")
+        names = sorted(list(forbidden.keys()))
+        for name in names:
+            invalid = sorted(list(forbidden[name]))
+            print("    {0}:".format(name))
+            for name2 in invalid:
+                print("      {0}".format(name2))
 
     print("Run selection loop:")
     pairs = selection_loop(emails, forbidden)
