@@ -171,6 +171,11 @@ def TEST_single_selection():
 
 def selection_loop(emails, forbidden):
     iter_max = 1000
+    # TODO: Try a reasonable number of tries (10? 30? 100?) then switch to
+    #       enumerating (constrained enumeration: don't enumerate all, but
+    #       instead shuffle and then iterate through valid choices.  Make a
+    #       note to the user that we're switching to enumeration and that it
+    #       might take a while.
     for iteration in range(iter_max):
         print("Iteration {0:0{1}d} ------------------------------".format(
             iteration, ss_util.digits(iter_max)))
@@ -212,6 +217,42 @@ def test_email_send(pairs):
         ] + body)
     server.sendmail(username, username, message)
     server.quit()
+
+# =============================================================================
+# Email
+
+def email_login(email, url, port):
+    server = smtplib.SMTP(":".join((url, port)))
+    server.ehlo()
+    server.starttls()
+    password = getpass.getpass("password: ")
+    server.login(email, password)
+    return(server)
+
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+def email_logout(server):
+    server.quit()
+
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+def send_email(server, sender_name, sender_email, giver_name, giver_email,
+        receiver, subject, message):
+    header = "\n".join([
+        "To: " + giver_email,
+        "From: " + sender_email,
+        "Content-type: text/html",
+        "Subject: " + subject,
+        ])
+    body = "<br>".join([message.format(gifter=giver_name, recipient=receiver),
+        "",
+        " ".join([
+            "This message was generated automatically.  Please don't lose",
+            "this email, because {0} does not have a record of who is giving",
+            "a gift to whom."
+            ]).format(sender_name)
+        ])
+    server.sendmail(sender_email, giver_email, header + "\n\n" + body)
 
 # =============================================================================
 # Main
@@ -278,6 +319,16 @@ def main():
 
     #print("Send a test email to demonstrate that sending works.")
     #test_email_send(pairs)
+    organizer = input_data["ORGANIZER"]
+    server = email_login(organizer["email"],
+            organizer["smtp url"], organizer["smtp port"])
+    for giver in pairs.keys():
+        # Testing -- need to change to the right email
+        send_email(server, organizer["name"], organizer["email"],
+                #giver, emails[giver], pairs[giver],
+                giver, emails[giver], "TEST",
+                input_data["MESSAGE SUBJECT"], input_data["MESSAGE BODY"])
+    email_logout(server)
 
 if __name__ == "__main__":
     main()
