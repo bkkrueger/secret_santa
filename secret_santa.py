@@ -221,12 +221,15 @@ def main():
     # Get input
     # TODO: Command line argument: generate random test input or read from a
     #       user-specified file.
-    N = 10
-    P = 14
-    print("Choose {0} names with {1} forbidden pairs:".format(N,P))
-    input_data = ss_test_input.get_test_input(N,P)
+    input_data = ss_parse.parse("input.txt")
+    #N = 10
+    #P = 14
+    #print("Choose {0} names with {1} forbidden pairs:".format(N,P))
+    #input_data = ss_test_input.get_test_input(N,P)
     emails = input_data["PARTICIPANTS"]
     bad_pairs = input_data["DO NOT PAIR"]
+    N = len(emails.keys())
+    P = len(bad_pairs)
 
     if __debug__:
         print("  Names:")
@@ -239,11 +242,14 @@ def main():
                 i+1,ss_util.digits(P),pair))
 
     # Process input
-    print("Verify input:")
+    if __debug__:
+        print("Verify input:")
     verify_input(emails, bad_pairs)
-    print("  Input valid")
+    if __debug__:
+        print("  Input valid")
 
-    print("Process input:")
+    if __debug__:
+        print("Process input:")
     forbidden = process_input(emails, bad_pairs)
 
     if __debug__:
@@ -255,14 +261,16 @@ def main():
             for name2 in invalid:
                 print("      {0}".format(name2))
 
-    print("Run selection loop:")
+    if __debug__:
+        print("Run selection loop:")
     pairs = selection_loop(emails, forbidden)
     #for giver, receiver in pairs.items():
     #    print("  {0} is giving a gift to {1}".format(giver, receiver))
 
-    print("Writing results to a file:")
-    filename = input("filename: ")
-
+    if __debug__:
+        print("Writing results to a file:")
+    #filename = input("filename: ")
+    filename = "ss.txt"
     with open(filename,'w') as outfile:
         for giver in pairs.keys():
             outfile.write("   {0}   {1}   {2}\n".format(
